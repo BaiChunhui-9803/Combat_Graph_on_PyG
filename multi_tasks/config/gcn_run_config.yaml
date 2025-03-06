@@ -1,0 +1,10 @@
+{
+  "model": "GCN",
+  "test_size": 0.1,
+  "layers": 5,
+  "hidden_channels": 64,
+  "lr": 0.14182866990169624,
+  "weight_decay": 0.0004981,
+  "momentum": 0.8124520901215206,
+  "seed": 12160
+}

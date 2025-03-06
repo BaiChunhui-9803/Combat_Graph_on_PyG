@@ -1,0 +1,54 @@
+{
+    "name": "transformer_sweep",
+    "method": "bayes",
+    "metric": {
+        "name": "transformer/accuracy",
+        "goal": "maximize",
+    },
+    "parameters": {
+        # 参数固定
+        # "seed": {
+        #     "values": [12160]
+        # },
+        # "layers": {
+        #     "values": [3]
+        # },
+        # "hidden_channels": {
+        #     "values": [32]
+        # },
+        # "weight_decay": {
+        #     "values": [0.0005184]
+        # },
+        # "lr": {
+        #     "values": [0.3810266289524771]
+        # },
+        # "momentum": {
+        #     "values": [0.8386865621629878]
+        # },
+        # 参数搜索
+        "seed": {
+            "min": 10,
+            "max": 12345
+        },
+        "layers": {
+            "values": [3, 4, 5]
+        },
+        "hidden_channels": {
+            "values": [16, 32, 64]
+        },
+        "weight_decay": {
+            "distribution": "normal",
+            "mu": 5e-4,
+            "sigma": 1e-5,
+        },
+        "lr": {
+            "min": 0.15,
+            "max": 0.4
+        },
+        "momentum": {
+            "min": 0.7,
+            "max": 0.99
+        },
+
+    }
+}
