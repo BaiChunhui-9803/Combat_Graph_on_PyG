@@ -51,10 +51,10 @@ class MyGAT(torch.nn.Module):
         self.dropout = dropout
         self.convs = ModuleList()
 
-        self.convs.append(GATConv(in_channels, hidden_channels, heads=heads, dropout=0.0))
+        self.convs.append(GATConv(in_channels, hidden_channels, heads=heads, dropout=0.5))
         for i in range(layers - 2):
-            self.convs.append(GATConv(hidden_channels * heads, hidden_channels, heads=heads, dropout=0.0))
-        self.convs.append(GATConv(hidden_channels * heads, out_channels, heads=1, dropout=0.0))
+            self.convs.append(GATConv(hidden_channels * heads, hidden_channels, heads=heads, dropout=0.5))
+        self.convs.append(GATConv(hidden_channels * heads, out_channels, heads=1, dropout=0.5))
 
     def forward(self, x, edge_index, **kwargs):
         for i, conv in enumerate(self.convs):
@@ -89,10 +89,14 @@ class MyGatedGCN(torch.nn.Module):
     def __init__(self, layers, in_channels, hidden_channels, out_channels):
         super(MyGatedGCN, self).__init__()
         self.layers = layers
-        self.gated_conv = GatedGraphConv(out_channels=out_channels, num_layers=layers)
+        self.input_linear = Linear(in_channels, out_channels)
+        self.gated_conv = GatedGraphConv(
+            out_channels=out_channels,
+            num_layers=layers)
         self.fc = Linear(out_channels, out_channels)
 
     def forward(self, x, edge_index, **kwargs):
+        x = self.input_linear(x)
         x = self.gated_conv(x, edge_index)
         x = F.relu(x)
         x = self.fc(x)

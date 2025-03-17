@@ -3,10 +3,12 @@ from torch_geometric.data import Data
 from torch_geometric.transforms import RandomNodeSplit
 import wandb
 import json
+import os
 
 # =============================================================================
 
-pro_name = "sce2m2train2"
+# pro_name = "sce2m2train2"
+pro_name = "combat_database_test"
 
 # =============================================================================
 # 配置W&B
@@ -14,7 +16,9 @@ use_wandb = True #@param {type:"boolean"}
 use_wandb = False
 wandb_project = "build_dataset" #@param {type:"string"}
 wandb_run_name = f"{pro_name}_dataset_builder" #@param {type:"string"}
-data_set_path = f"D:/OFEC/ofec/instance/problem/realworld/game/data_set"
+data_set_path = f"D:/OFEC/OFEC_private/instance/problem/realworld/game/data_set/{pro_name}"
+if not os.path.exists(data_set_path):
+    os.makedirs(data_set_path)
 
 if use_wandb:
     wandb.init(project=wandb_project, name=wandb_run_name)

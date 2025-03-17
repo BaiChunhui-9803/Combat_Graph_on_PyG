@@ -1,10 +1,10 @@
 {
   "model": "Transformer",
   "test_size": 0.1,
-  "layers": 5,
-  "hidden_channels": 16,
-  "lr": 0.15349036602298882,
-  "weight_decay": 0.0004937084558281669,
-  "momentum": 0.7013305812010563,
-  "seed": 1639
+  "layers": 4,
+  "hidden_channels": 64,
+  "lr": 0.15336814657730424,
+  "weight_decay": 0.0005053963617567439,
+  "momentum": 0.7353088943639019,
+  "seed": 12336
 }

@@ -16,7 +16,7 @@ enable_wandb = True
 enable_sweep = True
 DEBUG = True
 pro_name = "sce2m2train2"
-model_name = "GAT"
+model_name = "GatedGCN"
 
 # =============================================================================
 with open(f'config/{model_name.lower()}_run_config.yaml', 'r') as file:
@@ -36,9 +36,9 @@ model_map = {
     "MLP": "MyMLP",
     "GAT": "MyGAT",
     "Transformer": "MyTransformer",
+    "GatedGCN": "MyGatedGCN",
     # "GIN": "GINConv",
     # "GraphSAGE": "SAGEConv",
-    # "GatedGCN": "GatedGraphConv",
     # "APPNP": "APPNP",
     # "GraphConv": "GraphConv"
 }
@@ -100,6 +100,7 @@ data = RandomNodeSplit(split='train_rest',
                        num_val=0.0,
                        num_test=run_config["test_size"])(data_set)
 
+
 data_details = {
     "num_train_nodes": data.train_mask.sum(),
     "rate_train_nodes": int(data.train_mask.sum()) / data.num_nodes,
@@ -141,6 +142,9 @@ optimizer = torch.optim.SGD(model.parameters(),
                             lr=run_config["lr"],
                             weight_decay=run_config["weight_decay"],
                             momentum=run_config["momentum"])
+# optimizer = torch.optim.Adam(model.parameters(),
+#                             lr=run_config["lr"],
+#                             weight_decay=run_config["weight_decay"])
 criterion = torch.nn.CrossEntropyLoss()
 
 
@@ -157,19 +161,20 @@ def train():
 
 def test():
     model.eval()
-    out = model(x=data.x, edge_index=data.edge_index)
-    pred = out.argmax(dim=-1)  # Use the class with highest probability.
-    test_correct = pred[data.test_mask] == data.y[data.test_mask]  # Check against ground-truth labels.
-    test_acc = int(test_correct.sum()) / int(data.test_mask.sum())  # Derive ratio of correct predictions.
+    with torch.no_grad():
+        out = model(x=data.x, edge_index=data.edge_index)
+        pred = out.argmax(dim=-1)  # Use the class with highest probability.
+        test_correct = pred[data.test_mask] == data.y[data.test_mask]  # Check against ground-truth labels.
+        test_acc = int(test_correct.sum()) / int(data.test_mask.sum())  # Derive ratio of correct predictions.
     return test_acc
 
 
 for epoch in range(1, 500):
     loss = train()
     test_acc = test()
+    print(f'Epoch: {epoch:03d}, Loss: {loss:.4f}, Accuracy: {test_acc:.4f}')
     if enable_wandb:
         wandb.log({"gcn/loss": loss, "gcn/accuracy": test_acc})
-    print(f'Epoch: {epoch:03d}, Loss: {loss:.4f}, Accuracy: {test_acc:.4f}')
 
 model.eval()
 
@@ -184,74 +189,3 @@ if enable_wandb:
 
 if enable_wandb:
     wandb.finish()
-# =============================================================================
-# 超参数搜索
-import tqdm
-def agent_fn():
-    wandb.init()
-    torch.manual_seed(wandb.config.seed)
-    # data = RandomNodeSplit(split='train_rest',
-    #                        num_val=0.0,
-    #                        num_test=0.1)(data_set)
-    # data = RandomNodeSplit(split='train_rest',
-    #                        num_val=0.0,
-    #                        num_test=wandb.config.test_size)(data_set)
-    model = ModelClass(layers=wandb.config.layers,
-                  in_channels = data.num_node_features,
-                  hidden_channels = wandb.config.hidden_channels,
-                  out_channels = my_data_set.num_classes)
-    wandb.watch(model)
-
-    with torch.no_grad():
-      out = model(x=data.x, edge_index=data.edge_index)
-      embedding_to_wandb(out, color=data.y, key=f"{model_name.lower()}/embedding/init")
-
-    optimizer = torch.optim.SGD(model.parameters(),
-                                lr=wandb.config.lr,
-                                weight_decay=wandb.config.weight_decay,
-                                momentum=wandb.config.momentum)
-    criterion = torch.nn.CrossEntropyLoss()
-
-    def train():
-          model.train()
-          optimizer.zero_grad()  # Clear gradients.
-          out = model(x=data.x, edge_index=data.edge_index)  # Perform a single forward pass.
-          loss = criterion(out[data.train_mask], data.y[data.train_mask])  # Compute the loss solely based on the training nodes.
-          loss.backward()  # Derive gradients.
-          optimizer.step()  # Update parameters based on gradients.
-          return loss
-
-    def test():
-          model.eval()
-          with torch.no_grad():
-              out = model(x=data.x, edge_index=data.edge_index)
-              pred = out.argmax(dim=-1)  # Use the class with highest probability.
-              test_correct = pred[data.test_mask] == data.y[data.test_mask]  # Check against ground-truth labels.
-              test_acc = int(test_correct.sum()) / int(data.test_mask.sum())  # Derive ratio of correct predictions.
-              test_loss = criterion(out[data.test_mask], data.y[data.test_mask])  # Compute test loss
-          return test_acc
-
-    for epoch in tqdm.tqdm(range(1, 500)):
-        loss = train()
-        test_acc = test()
-        wandb.log({f"{model_name.lower()}/loss": loss, f"{model_name.lower()}/accuracy": test_acc})
-
-    model.eval()
-
-    out = model(x=data.x, edge_index=data.edge_index)
-    test_acc = test()
-    wandb.summary[f"{model_name.lower()}/accuracy"] = test_acc
-    # wandb.log({"gcn/accuracy": test_acc})
-    embedding_to_wandb(out, color=data.y, key=f"{model_name.lower()}/embedding/trained")
-    wandb.finish()
-
-with open(f'config/{model_name.lower()}_sweep_config.yaml', 'r') as file:
-    sweep_config = yaml.safe_load(file)
-
-if enable_sweep:
-    sweep_id = wandb.sweep(sweep_config, project=f"{pro_name}_sweep")
-    wandb.agent(sweep_id, project=f"{pro_name}_sweep", function=agent_fn, count=1000)
-
-
-
-wandb.finish()

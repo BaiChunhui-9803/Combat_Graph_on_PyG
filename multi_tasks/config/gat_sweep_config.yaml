@@ -7,24 +7,24 @@
     },
     "parameters": {
         # 参数固定
-        # "seed": {
-        #     "values": [12160]
-        # },
-        # "layers": {
-        #     "values": [3]
-        # },
-        # "hidden_channels": {
-        #     "values": [32]
-        # },
-        # "weight_decay": {
-        #     "values": [0.0005184]
-        # },
-        # "lr": {
-        #     "values": [0.3810266289524771]
-        # },
-        # "momentum": {
-        #     "values": [0.8386865621629878]
-        # },
+#         "seed": {
+#             "values": [7293]
+#         },
+#         "layers": {
+#             "values": [3]
+#         },
+#         "hidden_channels": {
+#             "values": [64]
+#         },
+#         "weight_decay": {
+#             "values": [0.0005002938758519827]
+#         },
+#         "lr": {
+#             "values": [0.2704234274117684]
+#         },
+#         "momentum": {
+#             "values": [0.8874693876458654]
+#         },
         # 参数搜索
         "seed": {
             "min": 10,
@@ -49,6 +49,10 @@
             "min": 0.7,
             "max": 0.99
         },
+
+
+
+
 
     }
 }

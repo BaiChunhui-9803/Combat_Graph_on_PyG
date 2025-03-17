@@ -1,10 +1,58 @@
 {
-  "model": "MLP",
-  "test_size": 0.1,
-  "layers": 5,
-  "hidden_channels": 64,
-  "lr": 0.14182866990169624,
-  "weight_decay": 0.0004981,
-  "momentum": 0.8124520901215206,
-  "seed": 2946
+    "name": "mlp_sweep",
+    "method": "bayes",
+    "metric": {
+        "name": "mlp/accuracy",
+        "goal": "maximize",
+    },
+    "parameters": {
+        # 参数固定
+#         "seed": {
+#             "values": [7293]
+#         },
+#         "layers": {
+#             "values": [3]
+#         },
+#         "hidden_channels": {
+#             "values": [64]
+#         },
+#         "weight_decay": {
+#             "values": [0.0005002938758519827]
+#         },
+#         "lr": {
+#             "values": [0.2704234274117684]
+#         },
+#         "momentum": {
+#             "values": [0.8874693876458654]
+#         },
+        # 参数搜索
+        "seed": {
+            "min": 10,
+            "max": 12345
+        },
+        "layers": {
+            "values": [3, 4, 5]
+        },
+        "hidden_channels": {
+            "values": [16, 32, 64]
+        },
+        "weight_decay": {
+            "distribution": "normal",
+            "mu": 5e-4,
+            "sigma": 1e-5,
+        },
+        "lr": {
+            "min": 0.15,
+            "max": 0.4
+        },
+        "momentum": {
+            "min": 0.7,
+            "max": 0.99
+        },
+
+
+
+
+
+    }
 }
